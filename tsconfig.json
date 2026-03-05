@@ -14,11 +14,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "vite/client",
-      "node",
-      "@vercel/node"
-    ],
+    "types": ["vite/client", "node", "@vercel/node"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
@@ -32,12 +28,5 @@
     "postcss.config.js",
     "vite-env.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
-<<<<<<< HEAD
+  "exclude": ["node_modules", "dist"]
 }
-=======
-}
->>>>>>> 3205d86 (fix: tsconfig for vercel api + node types)
