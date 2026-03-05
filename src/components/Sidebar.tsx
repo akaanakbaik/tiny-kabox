@@ -3,7 +3,6 @@ import * as Dialog from "@radix-ui/react-dialog"
 import { motion, AnimatePresence } from "framer-motion"
 import { NavLink } from "react-router-dom"
 import { X, Home, BookOpen, FileText } from "lucide-react"
-import { getAppName, getLogoUrl } from "../lib/config"
 
 type Props = {
   open: boolean
@@ -36,8 +35,6 @@ function NavItem(props: { to: string; icon: React.ReactNode; title: string; desc
 
 export default function Sidebar({ open, onOpenChange }: Props) {
   const close = () => onOpenChange(false)
-  const app = getAppName()
-  const logo = getLogoUrl()
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -65,9 +62,14 @@ export default function Sidebar({ open, onOpenChange }: Props) {
                 <div className="flex h-full flex-col">
                   <div className="flex items-center justify-between border-b border-border/70 px-4 py-4">
                     <div className="flex items-center gap-3">
-                      <img src={logo} alt="kabox" className="h-9 w-9 select-none" draggable={false} />
+                      <img
+                        src="https://raw.githubusercontent.com/akaanakbaik/my-cdn/main/logokaboxnobg.png"
+                        alt="kabox"
+                        className="h-9 w-9 select-none"
+                        draggable={false}
+                      />
                       <div className="flex flex-col leading-tight">
-                        <div className="text-sm font-semibold">{app}</div>
+                        <div className="text-sm font-semibold">short url by kabox</div>
                         <div className="text-xs text-muted">Menu</div>
                       </div>
                     </div>
@@ -85,9 +87,9 @@ export default function Sidebar({ open, onOpenChange }: Props) {
 
                   <div className="flex-1 overflow-auto px-4 py-4">
                     <div className="space-y-3">
-                      <NavItem to="/" onClick={close} icon={<Home className="h-5 w-5" />} title="Home" desc="Create and use short links" />
-                      <NavItem to="/apidocs" onClick={close} icon={<BookOpen className="h-5 w-5" />} title="API Docs" desc="Endpoints, cURL, responses" />
-                      <NavItem to="/terms" onClick={close} icon={<FileText className="h-5 w-5" />} title="Syarat & Ketentuan" desc="Terms, usage policy, privacy" />
+                      <NavItem to="/" onClick={close} icon={<Home className="h-5 w-5" />} title="Home" desc="Create and manage short links" />
+                      <NavItem to="/apidocs" onClick={close} icon={<BookOpen className="h-5 w-5" />} title="API Docs" desc="Endpoints, cURL, and responses" />
+                      <NavItem to="/terms" onClick={close} icon={<FileText className="h-5 w-5" />} title="Syarat & Ketentuan" desc="Terms, usage policy, and privacy" />
                     </div>
 
                     <div className="mt-6 rounded-2xl border border-border/70 bg-surfaceElev px-4 py-4">

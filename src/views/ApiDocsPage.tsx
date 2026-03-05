@@ -3,8 +3,6 @@ import { motion } from "framer-motion"
 import { Copy, TerminalSquare, Link2, ArrowLeft } from "lucide-react"
 import { copyText } from "../lib/clipboard"
 import { useHttp } from "../lib/http"
-import Seo from "../components/Seo"
-import { getPublicBaseUrl } from "../lib/config"
 
 function CodeBlock({ code }: { code: string }) {
   const { notifyInfo, notifyWarn } = useHttp()
@@ -44,7 +42,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 }
 
 export default function ApiDocsPage() {
-  const base = getPublicBaseUrl()
+  const base = window.location.origin
 
   const curl1 = `curl -X POST ${base}/api/shorten -H "Content-Type: application/json" -d '{"url":"https://example.com/very/long/path","code":"ptfaka"}'`
   const curl2 = `curl -X POST ${base}/api/shorten -H "Content-Type: application/json" -d '{"url":"https://example.com/very/long/path"}'`
@@ -58,8 +56,6 @@ export default function ApiDocsPage() {
 
   return (
     <div className="space-y-6">
-      <Seo title="API Docs" description="Endpoints, cURL, and responses" path="/apidocs" />
-
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="card p-5 md:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">

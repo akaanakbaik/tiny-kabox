@@ -1,10 +1,7 @@
 import React from "react"
 import { Github, Send } from "lucide-react"
-import { getTelegramUrl } from "../lib/config"
 
 export default function Footer() {
-  const telegram = getTelegramUrl()
-
   return (
     <footer className="border-t border-border/70 bg-surface/70">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 text-xs text-muted md:px-6">
@@ -16,7 +13,6 @@ export default function Footer() {
             rel="noreferrer"
             className="inline-flex items-center gap-1 rounded-full border border-border bg-surfaceElev px-2 py-1 font-semibold text-foreground transition-all hover:bg-surfaceElev2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
             aria-label="aka"
-            title="aka"
           >
             <span className="text-danger">aka</span>
           </a>
@@ -27,12 +23,12 @@ export default function Footer() {
 
         <div className="flex items-center gap-2">
           <a
-            href={telegram}
+            href="https://t.me/"
             target="_blank"
             rel="noreferrer"
             className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surfaceElev transition-all hover:bg-surfaceElev2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
-            aria-label="Telegram @akamodebaik"
-            title="Telegram @akamodebaik"
+            aria-label="Telegram"
+            title="Telegram"
           >
             <Send className="h-4 w-4" />
           </a>
@@ -41,8 +37,8 @@ export default function Footer() {
             target="_blank"
             rel="noreferrer"
             className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surfaceElev transition-all hover:bg-surfaceElev2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60"
-            aria-label="GitHub @akaanakbaik"
-            title="GitHub @akaanakbaik"
+            aria-label="GitHub"
+            title="GitHub"
           >
             <Github className="h-4 w-4" />
           </a>
