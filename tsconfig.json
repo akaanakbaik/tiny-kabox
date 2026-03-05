@@ -36,4 +36,8 @@
     "node_modules",
     "dist"
   ]
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3205d86 (fix: tsconfig for vercel api + node types)
