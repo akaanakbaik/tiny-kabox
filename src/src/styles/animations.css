@@ -1,0 +1,43 @@
+@keyframes progressShrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.animate-progress {
+  animation: progressShrink 5.2s linear forwards;
+}
+
+@keyframes softPop {
+  0% {
+    transform: translateY(6px) scale(0.985);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes softPulse {
+  0% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+
+.soft-pop {
+  animation: softPop 180ms ease-out both;
+}
+
+.soft-pulse {
+  animation: softPulse 1.1s ease-in-out infinite;
+}
