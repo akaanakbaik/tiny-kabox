@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "^/api/shorten$",
+      "dest": "/api/shorten.ts"
+    },
+    {
+      "src": "^/api/url/([^/]+)$",
+      "dest": "/api/url/$1.ts"
+    },
+    {
+      "src": "^/([^/.]+)$",
+      "dest": "/api/r/$1.ts"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "^(.*)$",
+      "dest": "/index.html"
+    }
+  ]
+}
