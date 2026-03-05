@@ -14,10 +14,7 @@ function getPool(): pg.Pool {
   const url = env("DATABASE_URL")
   return new Pool({
     connectionString: url,
-    ssl: {
-      rejectUnauthorized: true,
-      ca
-    },
+    ssl: { rejectUnauthorized: true, ca },
     max: 20
   })
 }
@@ -37,6 +34,7 @@ async function ensureSchema(pool: pg.Pool): Promise<void> {
 function notFound(res: VercelResponse): void {
   res.status(404)
   res.setHeader("Content-Type", "text/plain; charset=utf-8")
+  res.setHeader("Cache-Control", "no-store")
   res.send("Not Found")
 }
 
@@ -64,6 +62,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.statusCode = 302
     res.setHeader("Location", url)
     res.setHeader("Cache-Control", "no-store")
+    res.setHeader("Referrer-Policy", "no-referrer")
+    res.setHeader("X-Content-Type-Options", "nosniff")
     return res.end()
   } catch {
     return notFound(res)
