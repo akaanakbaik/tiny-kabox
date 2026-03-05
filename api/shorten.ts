@@ -1,76 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
-import pg from "pg"
 import crypto from "crypto"
-
-const { Pool } = pg
-
-type ShortenBody = {
-  url?: string
-  code?: string
-}
-
-const syllables = [
-  "ka","box","tin","y","pt","fa","aka","dev","id","my","ur","li","sh","or","tr","zi","ko","bo","xa","ne","mi","no","ra","ri","ta","te","la","lu","pa","pi","sa","si","do","di","ve","vi","xo","xi","yo","ya"
-]
-
-function env(name: string): string {
-  const v = process.env[name]
-  if (!v) throw new Error(`Missing env ${name}`)
-  return v
-}
-
-function numEnv(name: string, fallback: number): number {
-  const raw = process.env[name]
-  const n = raw ? Number(raw) : fallback
-  if (!Number.isFinite(n)) return fallback
-  return n
-}
-
-function getPool(): pg.Pool {
-  const ca = env("PG_CA_CERT")
-  const url = env("DATABASE_URL")
-  return new Pool({
-    connectionString: url,
-    ssl: { rejectUnauthorized: true, ca },
-    max: 20
-  })
-}
-
-async function ensureSchema(pool: pg.Pool): Promise<void> {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS short_urls (
-      code TEXT PRIMARY KEY,
-      url TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      clicks BIGINT NOT NULL DEFAULT 0
-    )
-  `)
-  await pool.query(`CREATE INDEX IF NOT EXISTS short_urls_created_at_idx ON short_urls(created_at DESC)`)
-}
-
-function isValidCustomCode(code: string): boolean {
-  const minLen = numEnv("CUSTOM_CODE_MIN_LEN", 3)
-  const maxLen = numEnv("CUSTOM_CODE_MAX_LEN", 10)
-  if (code.length < minLen || code.length > maxLen) return false
-  return /^[a-zA-Z0-9_-]+$/.test(code)
-}
-
-function pick<T>(arr: T[]): T {
-  const i = crypto.randomInt(0, arr.length)
-  return arr[i]
-}
-
-function generateCode(): string {
-  const minParts = numEnv("CODE_MIN_PARTS", 3)
-  const maxParts = numEnv("CODE_MAX_PARTS", 6)
-  const parts = crypto.randomInt(minParts, maxParts + 1)
-  let out = ""
-  for (let i = 0; i < parts; i += 1) out += pick(syllables)
-  const maxLen = numEnv("CUSTOM_CODE_MAX_LEN", 10)
-  if (out.length > maxLen) out = out.slice(0, maxLen)
-  if (out.length < 3) out = (out + "kbx").slice(0, 3)
-  return out
-}
+import { makePool } from "./_db"
 
 function toJson(res: VercelResponse, status: number, data: unknown): void {
   res.status(status)
@@ -79,80 +9,108 @@ function toJson(res: VercelResponse, status: number, data: unknown): void {
   res.send(JSON.stringify(data))
 }
 
+function isValidUrl(s: string): boolean {
+  try {
+    const u = new URL(s)
+    return u.protocol === "http:" || u.protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
+function normBase(base: string): string {
+  return base.replace(/\/+$/, "")
+}
+
+function isValidCustomCode(code: string): boolean {
+  const trimmed = code.trim()
+  if (!trimmed) return false
+  if (trimmed.length < (Number(process.env.CUSTOM_CODE_MIN_LEN) || 3)) return false
+  if (trimmed.length > (Number(process.env.CUSTOM_CODE_MAX_LEN) || 10)) return false
+  return /^[a-zA-Z0-9_-]+$/.test(trimmed)
+}
+
+const WORDS = [
+  "kbx",
+  "tiny",
+  "url",
+  "go",
+  "link",
+  "fast",
+  "mini",
+  "safe",
+  "web",
+  "box",
+  "aka",
+  "dev",
+  "id",
+  "net",
+  "app",
+  "pro",
+  "byte",
+  "code",
+  "data",
+  "hub",
+  "node",
+  "edge",
+  "cloud",
+  "snap",
+  "dash",
+  "nova",
+  "mint",
+  "zen",
+  "echo",
+  "flux",
+  "kite",
+  "volt",
+  "pixel"
+]
+
+function pickWord(): string {
+  const i = crypto.randomInt(0, WORDS.length)
+  return WORDS[i]
+}
+
+function randomCode(): string {
+  const minParts = Number(process.env.CODE_MIN_PARTS) || 3
+  const maxParts = Number(process.env.CODE_MAX_PARTS) || 6
+  const n = crypto.randomInt(minParts, maxParts + 1)
+  let s = ""
+  for (let i = 0; i < n; i++) s += pickWord()
+  return s.slice(0, 10).replace(/[^a-zA-Z0-9_-]/g, "")
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST")
-    return toJson(res, 405, { ok: false, message: "Method not allowed" })
-  }
+  if (req.method !== "POST") return toJson(res, 405, { ok: false, message: "Method not allowed" })
 
-  let body: ShortenBody = {}
+  const baseUrl = normBase(process.env.BASE_URL || "")
+  if (!baseUrl) return toJson(res, 500, { ok: false, message: "Missing BASE_URL" })
+
+  const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body
+  const url = String(body?.url || "").trim()
+  const requestedCode = String(body?.code || "").trim()
+
+  if (!isValidUrl(url)) return toJson(res, 400, { ok: false, message: "Invalid URL" })
+
+  const code = requestedCode ? (isValidCustomCode(requestedCode) ? requestedCode : "") : ""
+  if (requestedCode && !code) return toJson(res, 400, { ok: false, message: "Invalid code" })
+
+  const pool = makePool()
   try {
-    body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body as ShortenBody)
-  } catch {
-    return toJson(res, 400, { ok: false, message: "Invalid JSON body" })
-  }
-
-  const rawUrl = (body.url || "").trim()
-  if (!rawUrl) return toJson(res, 400, { ok: false, message: "URL is required" })
-
-  let parsed: URL
-  try {
-    parsed = new URL(rawUrl)
-  } catch {
-    return toJson(res, 400, { ok: false, message: "URL is not valid" })
-  }
-
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    return toJson(res, 400, { ok: false, message: "Only http and https are allowed" })
-  }
-
-  const baseUrl = env("BASE_URL").replace(/\/+$/, "")
-  const pool = getPool()
-
-  try {
-    await ensureSchema(pool)
-
-    const requested = (body.code || "").trim()
-    let code = ""
-
-    if (requested) {
-      code = requested
-      if (!isValidCustomCode(code)) {
-        return toJson(res, 400, { ok: false, message: "Custom code must be 3-10 chars, only letters numbers _ -" })
-      }
-
-      try {
-        await pool.query(`INSERT INTO short_urls(code,url) VALUES($1,$2)`, [code, parsed.toString()])
-      } catch (e: any) {
-        const msg = String(e?.message || "")
-        const isDup = msg.toLowerCase().includes("duplicate") || msg.toLowerCase().includes("unique")
-        if (isDup) return toJson(res, 409, { ok: false, message: "Custom code already used" })
-        return toJson(res, 500, { ok: false, message: "DB error" })
-      }
-    } else {
-      let tries = 0
-      while (tries < 14) {
-        const candidate = generateCode()
-        try {
-          await pool.query(`INSERT INTO short_urls(code,url) VALUES($1,$2)`, [candidate, parsed.toString()])
-          code = candidate
-          break
-        } catch (e: any) {
-          const msg = String(e?.message || "")
-          const isDup = msg.toLowerCase().includes("duplicate") || msg.toLowerCase().includes("unique")
-          if (!isDup) return toJson(res, 500, { ok: false, message: "DB error" })
-        }
-        tries += 1
-      }
-      if (!code) return toJson(res, 500, { ok: false, message: "Failed to generate unique code" })
+    let finalCode = code || randomCode()
+    for (let i = 0; i < 8; i++) {
+      const exists = await pool.query("SELECT 1 FROM short_urls WHERE code = $1 LIMIT 1", [finalCode])
+      if (exists.rowCount === 0) break
+      if (code) return toJson(res, 409, { ok: false, message: "Code already in use" })
+      finalCode = randomCode()
     }
 
-    return toJson(res, 200, {
-      ok: true,
-      code,
-      short_url: `${baseUrl}/${code}`,
-      url: parsed.toString()
-    })
+    await pool.query(
+      "INSERT INTO short_urls(code, url, created_at, clicks) VALUES ($1, $2, NOW(), 0)",
+      [finalCode, url]
+    )
+
+    return toJson(res, 200, { ok: true, code: finalCode, url, shortUrl: `${baseUrl}/${finalCode}` })
   } catch (e: any) {
     return toJson(res, 500, { ok: false, message: e?.message || "Server error" })
   } finally {
