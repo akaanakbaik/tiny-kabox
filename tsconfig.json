@@ -1,19 +1,39 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "skipLibCheck": true,
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
+    "allowJs": false,
+    "checkJs": false,
     "jsx": "react-jsx",
     "strict": true,
-    "types": ["vite/client", "node"]
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": [
+      "vite/client",
+      "node",
+      "@vercel/node"
+    ],
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["src", "api", "vite.config.ts", "tailwind.config.ts"]
+  "include": [
+    "src",
+    "api",
+    "vite.config.ts",
+    "tailwind.config.ts",
+    "postcss.config.js",
+    "vite-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
