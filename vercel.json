@@ -1,33 +1,11 @@
 {
   "version": 2,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "routes": [
-    {
-      "src": "^/api/shorten$",
-      "dest": "/api/shorten.ts"
-    },
-    {
-      "src": "^/api/url/([^/]+)$",
-      "dest": "/api/url/[code].ts?code=$1"
-    },
-    {
-      "src": "^/api/health$",
-      "dest": "/api/health.ts"
-    },
-    {
-      "src": "^/([^/.]+)$",
-      "dest": "/api/r/[code].ts?code=$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "^(.*)$",
-      "dest": "/index.html"
-    }
+    { "src": "^/api/shorten$", "dest": "/api/shorten.ts" },
+    { "src": "^/api/url/([^/]+)$", "dest": "/api/url/[code].ts?code=$1" },
+    { "src": "^/api/health$", "dest": "/api/health.ts" },
+    { "src": "^/([^/.]+)$", "dest": "/api/r/[code].ts?code=$1" },
+    { "handle": "filesystem" },
+    { "src": "^(.*)$", "dest": "/index.html" }
   ]
 }
