@@ -3,20 +3,19 @@ import { Link, useLocation } from "react-router-dom"
 import { Menu } from "lucide-react"
 import Sidebar from "./Sidebar"
 import { useApp } from "../state/useApp"
+import { getAppName, getLogoUrl } from "../lib/config"
 
 function Title() {
   const location = useLocation()
   const isHome = location.pathname === "/"
+  const app = getAppName()
+  const logo = getLogoUrl()
+
   return (
     <div className="flex items-center gap-3">
-      <img
-        src="https://raw.githubusercontent.com/akaanakbaik/my-cdn/main/logokaboxnobg.png"
-        alt="kabox"
-        className="h-9 w-9 select-none"
-        draggable={false}
-      />
+      <img src={logo} alt="kabox" className="h-9 w-9 select-none" draggable={false} />
       <div className="flex flex-col leading-tight">
-        <span className="text-sm font-semibold tracking-tight md:text-base">short url by kabox</span>
+        <span className="text-sm font-semibold tracking-tight md:text-base">{app}</span>
         <span className="text-xs text-muted md:text-sm">{isHome ? "Create short links fast" : "Modern short link platform"}</span>
       </div>
     </div>
