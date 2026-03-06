@@ -3,12 +3,22 @@ import { useApp } from "../state/useApp"
 export type ApiOk<T> = { ok: true } & T
 export type ApiErr = { ok: false; message: string }
 
+function tryParseJson(text: string) {
+  if (!text) return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
 export function useHttp() {
   const { setLoading, pushToast } = useApp()
 
   async function request<T>(path: string, init?: RequestInit): Promise<ApiOk<T>> {
     const started = performance.now()
     setLoading(true)
+
     try {
       const res = await fetch(path, {
         ...init,
@@ -19,11 +29,30 @@ export function useHttp() {
       })
 
       const text = await res.text()
-      const data = text ? JSON.parse(text) : null
+      const data = tryParseJson(text)
 
       if (!res.ok) {
-        const message = data?.message || "Request failed"
-        pushToast({ kind: "error", title: "Request error", message })
+        const message =
+          (data && typeof data === "object" && "message" in data && typeof data.message === "string" && data.message) ||
+          text ||
+          "Request failed"
+
+        pushToast({
+          kind: "error",
+          title: "Request error",
+          message
+        })
+
+        throw new Error(message)
+      }
+
+      if (!data) {
+        const message = "Server returned invalid JSON"
+        pushToast({
+          kind: "error",
+          title: "Response error",
+          message
+        })
         throw new Error(message)
       }
 
@@ -31,7 +60,9 @@ export function useHttp() {
     } finally {
       const elapsed = performance.now() - started
       const min = 380
-      if (elapsed < min) await new Promise((r) => window.setTimeout(r, Math.ceil(min - elapsed)))
+      if (elapsed < min) {
+        await new Promise((r) => window.setTimeout(r, Math.ceil(min - elapsed)))
+      }
       setLoading(false)
     }
   }
