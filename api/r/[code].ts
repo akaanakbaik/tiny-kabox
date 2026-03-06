@@ -1,40 +1,55 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
-import { makePool } from "../_db"
+import { ensureSchema, makePool } from "../_db"
 
-function normBase(base: string): string {
-  return base.replace(/\/+$/, "")
+function normalizeBaseUrl(input: string): string {
+  return input.replace(/\/+$/, "")
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const code = String(req.query.code || "").trim()
-  if (!code) {
-    res.statusCode = 302
-    res.setHeader("Location", normBase(process.env.BASE_URL || "") || "/")
-    res.end()
-    return
-  }
+  let pool = null
 
-  const pool = makePool()
   try {
-    const r = await pool.query("SELECT url FROM short_urls WHERE code = $1 LIMIT 1", [code])
-    if (!r.rowCount) {
+    const code = String(req.query.code || "").trim()
+    const baseUrl = normalizeBaseUrl(process.env.BASE_URL || "") || "/"
+
+    if (!code) {
       res.statusCode = 302
-      res.setHeader("Location", `${normBase(process.env.BASE_URL || "")}/404`)
+      res.setHeader("Location", baseUrl)
+      res.setHeader("Cache-Control", "no-store")
       res.end()
       return
     }
 
+    pool = makePool()
+    await ensureSchema(pool)
+
+    const found = await pool.query("SELECT url FROM short_urls WHERE code = $1 LIMIT 1", [code])
+
+    if (!found.rowCount) {
+      res.statusCode = 302
+      res.setHeader("Location", `${baseUrl}/404`)
+      res.setHeader("Cache-Control", "no-store")
+      res.end()
+      return
+    }
+
+    const targetUrl = String(found.rows[0].url || "")
+
     await pool.query("UPDATE short_urls SET clicks = clicks + 1 WHERE code = $1", [code])
 
     res.statusCode = 302
-    res.setHeader("Location", String(r.rows[0].url))
+    res.setHeader("Location", targetUrl)
     res.setHeader("Cache-Control", "no-store")
     res.end()
   } catch {
+    const baseUrl = normalizeBaseUrl(process.env.BASE_URL || "") || "/"
     res.statusCode = 302
-    res.setHeader("Location", normBase(process.env.BASE_URL || "") || "/")
+    res.setHeader("Location", baseUrl)
+    res.setHeader("Cache-Control", "no-store")
     res.end()
   } finally {
-    await pool.end().catch(() => {})
+    if (pool) {
+      await pool.end().catch(() => {})
+    }
   }
 }
