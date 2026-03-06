@@ -2,27 +2,25 @@ import pg from "pg"
 
 const { Pool } = pg
 
-function normalizeCa(raw: string): string {
-  return raw.replace(/\\n/g, "\n").replace(/\r/g, "").trim()
+function normalizeMultiline(value: string): string {
+  return value.replace(/\\n/g, "\n").replace(/\r/g, "").trim()
 }
 
-function getDbUrl(): string {
+function getConnectionString(): string {
   const value = process.env.DATABASE_URL || ""
-  if (!value) {
-    throw new Error("Missing DATABASE_URL")
-  }
+  if (!value) throw new Error("Missing DATABASE_URL")
   return value
 }
 
-function getDbCa(): string {
-  const value = normalizeCa(process.env.PG_CA_CERT || "")
+function getCaCertificate(): string {
+  const value = normalizeMultiline(process.env.PG_CA_CERT || "")
   if (!value || !value.includes("BEGIN CERTIFICATE")) {
     throw new Error("Invalid PG_CA_CERT")
   }
   return value
 }
 
-function getHostFromConnectionString(connectionString: string): string | undefined {
+function getServername(connectionString: string): string | undefined {
   try {
     return new URL(connectionString).hostname
   } catch {
@@ -31,9 +29,9 @@ function getHostFromConnectionString(connectionString: string): string | undefin
 }
 
 export function makePool(): pg.Pool {
-  const connectionString = getDbUrl()
-  const ca = getDbCa()
-  const servername = getHostFromConnectionString(connectionString)
+  const connectionString = getConnectionString()
+  const ca = getCaCertificate()
+  const servername = getServername(connectionString)
 
   return new Pool({
     connectionString,
