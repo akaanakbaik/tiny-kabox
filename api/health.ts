@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
-import { makePool } from "./_db"
+import { ensureSchema, makePool } from "./_db"
 
 function toJson(res: VercelResponse, status: number, data: unknown): void {
   res.status(status)
@@ -9,13 +9,28 @@ function toJson(res: VercelResponse, status: number, data: unknown): void {
 }
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
-  const pool = makePool()
+  let pool = null
+
   try {
-    const r = await pool.query("SELECT VERSION() AS version")
-    return toJson(res, 200, { ok: true, db_version: r.rows?.[0]?.version || "" })
-  } catch (e: any) {
-    return toJson(res, 500, { ok: false, message: e?.message || "DB error" })
+    pool = makePool()
+    await ensureSchema(pool)
+
+    const result = await pool.query("SELECT VERSION() AS version, NOW() AS now")
+    const row = result.rows?.[0] || {}
+
+    return toJson(res, 200, {
+      ok: true,
+      db_version: String(row.version || ""),
+      db_time: row.now ? new Date(row.now).toISOString() : null
+    })
+  } catch (error: any) {
+    return toJson(res, 500, {
+      ok: false,
+      message: error?.message || "Health check failed"
+    })
   } finally {
-    await pool.end().catch(() => {})
+    if (pool) {
+      await pool.end().catch(() => {})
+    }
   }
 }
