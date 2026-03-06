@@ -2,7 +2,7 @@ import { useApp } from "../state/useApp"
 
 export type ApiOk<T> = { ok: true } & T
 
-function parseResponseText(text: string) {
+function tryParseJson(text: string) {
   if (!text) return null
   try {
     return JSON.parse(text)
@@ -11,24 +11,24 @@ function parseResponseText(text: string) {
   }
 }
 
-function normalizeErrorMessage(text: string, data: any): string {
+function normalizeServerMessage(text: string, data: any): string {
   if (data && typeof data === "object" && typeof data.message === "string" && data.message.trim()) {
     return data.message.trim()
   }
 
-  const clean = text.trim()
+  const raw = text.trim()
 
-  if (!clean) return "Terjadi kesalahan pada server."
-  if (clean.startsWith("A server error has occurred")) return "Server sedang bermasalah. Silakan coba lagi beberapa saat."
-  if (clean.includes("FUNCTION_INVOCATION_FAILED")) return "Fungsi server gagal dijalankan. Silakan coba lagi."
-  return clean
+  if (!raw) return "Terjadi kesalahan pada server."
+  if (raw.startsWith("A server error has occurred")) return "Server sedang bermasalah. Silakan coba lagi sesaat lagi."
+  if (raw.includes("FUNCTION_INVOCATION_FAILED")) return "Function backend gagal dijalankan. Silakan coba lagi."
+  return raw
 }
 
 export function useHttp() {
   const { startLoading, stopLoading, pushToast } = useApp()
 
   async function request<T>(path: string, init?: RequestInit): Promise<ApiOk<T>> {
-    startLoading("Sedang memproses data...")
+    startLoading("Sedang memproses permintaan...")
 
     try {
       const res = await fetch(path, {
@@ -40,10 +40,10 @@ export function useHttp() {
       })
 
       const text = await res.text()
-      const data = parseResponseText(text)
+      const data = tryParseJson(text)
 
       if (!res.ok) {
-        const message = normalizeErrorMessage(text, data)
+        const message = normalizeServerMessage(text, data)
 
         pushToast({
           kind: "error",
@@ -70,7 +70,7 @@ export function useHttp() {
     } catch (error: any) {
       if (error instanceof Error) throw error
 
-      const message = "Terjadi kesalahan jaringan."
+      const message = "Terjadi gangguan jaringan."
       pushToast({
         kind: "error",
         title: "Koneksi gagal",
