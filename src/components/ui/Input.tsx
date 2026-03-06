@@ -16,25 +16,29 @@ type Props = React.InputHTMLAttributes<HTMLInputElement> & {
 export default function Input({ label, hint, error, rightSlot, className, ...props }: Props) {
   return (
     <div className="w-full">
-      {label ? <div className="mb-2 text-xs font-semibold text-muted">{label}</div> : null}
+      {label ? <label className="mb-2 block text-xs font-semibold tracking-wide text-muted">{label}</label> : null}
 
-      <div className={cn("relative", rightSlot ? "flex items-center" : "")}>
+      <div
+        className={cn(
+          "group relative flex h-14 items-center overflow-hidden rounded-[22px] border bg-surface text-foreground transition-all",
+          error ? "border-danger/70 shadow-[0_0_0_2px_rgba(255,77,79,0.12)]" : "border-border hover:border-white/15 focus-within:border-ring/70 focus-within:shadow-[0_0_0_2px_rgba(122,162,255,0.18)]"
+        )}
+      >
         <input
+          {...props}
           className={cn(
-            "h-12 w-full rounded-2xl border border-border bg-surfaceElev px-4 text-sm text-foreground outline-none transition-all placeholder:text-muted/60 focus-visible:ring-2 focus-visible:ring-ring/30",
+            "h-full w-full bg-transparent px-4 text-sm text-foreground outline-none placeholder:text-muted/55",
             rightSlot ? "pr-12" : "",
-            error ? "ring-2 ring-danger/25" : "",
             className
           )}
-          {...props}
         />
-        {rightSlot ? <div className="absolute right-2 inline-flex items-center justify-center">{rightSlot}</div> : null}
+        {rightSlot ? <div className="absolute right-3 inline-flex items-center justify-center">{rightSlot}</div> : null}
       </div>
 
       {error ? (
-        <div className="mt-2 text-xs font-semibold text-danger">{error}</div>
+        <div className="mt-2 text-xs font-medium text-danger">{error}</div>
       ) : hint ? (
-        <div className="mt-2 text-xs text-muted">{hint}</div>
+        <div className="mt-2 text-xs leading-relaxed text-muted">{hint}</div>
       ) : null}
     </div>
   )
