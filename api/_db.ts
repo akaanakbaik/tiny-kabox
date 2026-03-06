@@ -31,6 +31,24 @@ export function makePool(): pg.Pool {
       ca,
       ...(servername ? { servername } : {})
     },
-    max: 2
+    max: 5,
+    idleTimeoutMillis: 10000,
+    connectionTimeoutMillis: 10000
   })
+}
+
+export async function ensureSchema(pool: pg.Pool): Promise<void> {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS short_urls (
+      code TEXT PRIMARY KEY,
+      url TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      clicks BIGINT NOT NULL DEFAULT 0
+    )
+  `)
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS short_urls_created_at_idx
+    ON short_urls(created_at DESC)
+  `)
 }
