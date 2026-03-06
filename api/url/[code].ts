@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
-import { makePool } from "../_db"
+import { ensureSchema, makePool } from "../_db"
 
 function toJson(res: VercelResponse, status: number, data: unknown): void {
   res.status(status)
@@ -9,17 +9,49 @@ function toJson(res: VercelResponse, status: number, data: unknown): void {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const code = String(req.query.code || "").trim()
-  if (!code) return toJson(res, 400, { ok: false, message: "Missing code" })
+  let pool = null
 
-  const pool = makePool()
   try {
-    const r = await pool.query("SELECT code, url, created_at, clicks FROM short_urls WHERE code = $1 LIMIT 1", [code])
-    if (!r.rowCount) return toJson(res, 404, { ok: false, message: "Not found" })
-    return toJson(res, 200, { ok: true, data: r.rows[0] })
-  } catch (e: any) {
-    return toJson(res, 500, { ok: false, message: e?.message || "Server error" })
+    if (req.method !== "GET") {
+      return toJson(res, 405, { ok: false, message: "Method not allowed" })
+    }
+
+    const code = String(req.query.code || "").trim()
+    if (!code) {
+      return toJson(res, 400, { ok: false, message: "Missing code" })
+    }
+
+    pool = makePool()
+    await ensureSchema(pool)
+
+    const result = await pool.query(
+      "SELECT code, url, created_at, clicks FROM short_urls WHERE code = $1 LIMIT 1",
+      [code]
+    )
+
+    if (!result.rowCount) {
+      return toJson(res, 404, { ok: false, message: "URL not found" })
+    }
+
+    const row = result.rows[0]
+
+    return toJson(res, 200, {
+      ok: true,
+      data: {
+        code: String(row.code || ""),
+        url: String(row.url || ""),
+        created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
+        clicks: Number(row.clicks || 0)
+      }
+    })
+  } catch (error: any) {
+    return toJson(res, 500, {
+      ok: false,
+      message: error?.message || "Failed to fetch short URL detail"
+    })
   } finally {
-    await pool.end().catch(() => {})
+    if (pool) {
+      await pool.end().catch(() => {})
+    }
   }
 }
