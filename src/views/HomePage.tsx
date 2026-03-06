@@ -1,32 +1,39 @@
 import React from "react"
+import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Link2, Wand2, Copy, ExternalLink } from "lucide-react"
+import { Copy, ExternalLink, Link2, Wand2 } from "lucide-react"
+import Button from "../components/ui/Button"
+import Input from "../components/ui/Input"
+import Seo from "../components/Seo"
 import { useHttp } from "../lib/http"
 import { copyText } from "../lib/clipboard"
 import { isValidCustomCode, isValidUrl, normalizeCode } from "../lib/validators"
+import { getPublicBaseUrl } from "../lib/config"
 
 type ShortenResponse = {
   code: string
-  short_url: string
+  short_url?: string
+  shortUrl?: string
   url: string
 }
 
-function GlowDivider() {
-  return <div className="h-px w-full bg-border/70" />
+function makeShortUrl(base: string, code: string): string {
+  const b = base.replace(/\/+$/, "")
+  return `${b}/${code}`
 }
 
 export default function HomePage() {
   const { request, notifySuccess, notifyInfo, notifyWarn } = useHttp()
   const [url, setUrl] = React.useState("")
   const [custom, setCustom] = React.useState("")
-  const [result, setResult] = React.useState<ShortenResponse | null>(null)
+  const [result, setResult] = React.useState<{ code: string; short_url: string; url: string } | null>(null)
 
-  const canSubmit = isValidUrl(url) && (custom.trim() === "" || isValidCustomCode(normalizeCode(custom)))
+  const base = getPublicBaseUrl()
+  const trimmedUrl = url.trim()
+  const trimmedCode = normalizeCode(custom)
+  const canSubmit = isValidUrl(trimmedUrl) && (trimmedCode.length === 0 || isValidCustomCode(trimmedCode))
 
   async function onShorten() {
-    const trimmedUrl = url.trim()
-    const trimmedCode = normalizeCode(custom)
-
     if (!isValidUrl(trimmedUrl)) {
       notifyWarn("URL tidak valid", "Masukkan URL dengan format http atau https.")
       return
@@ -45,8 +52,10 @@ export default function HomePage() {
       body: JSON.stringify(payload)
     })
 
-    setResult({ code: data.code, short_url: data.short_url, url: data.url })
-    notifySuccess("Berhasil dibuat", `Short URL: ${data.short_url}`)
+    const short = data.short_url || data.shortUrl || makeShortUrl(base, data.code)
+    const forced = { code: data.code, short_url: short, url: data.url }
+    setResult(forced)
+    notifySuccess("Berhasil dibuat", forced.short_url)
   }
 
   async function onCopy() {
@@ -58,6 +67,8 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6">
+      <Seo title="Home" description="Create short links fast" path="/" />
+
       <motion.section
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -65,87 +76,73 @@ export default function HomePage() {
         className="card overflow-hidden"
       >
         <div className="p-5 md:p-6">
-          <div className="flex flex-col gap-2">
-            <div className="inline-flex items-center gap-2">
-              <span className="chip">
-                <Wand2 className="h-4 w-4" />
-                fast, clean, modern
-              </span>
-              <span className="chip">
-                <Link2 className="h-4 w-4" />
-                tiny.kabox.my.id
-              </span>
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="chip">
+              <Wand2 className="h-4 w-4" />
+              fast, clean, modern
+            </span>
+            <span className="chip">
+              <Link2 className="h-4 w-4" />
+              {base.replace(/^https?:\/\//, "")}
+            </span>
+          </div>
 
-            <div className="mt-2 text-xl font-semibold tracking-tight md:text-2xl">
-              Buat short link yang rapi, singkat, dan cepat
-            </div>
-            <div className="text-sm leading-relaxed text-muted">
-              Masukkan URL panjang, pilih custom code (opsional), lalu sistem akan menghasilkan short URL yang siap dipakai.
-              Semua interaksi sudah memakai notifikasi dan loading modern.
-            </div>
+          <div className="mt-3 text-xl font-semibold tracking-tight md:text-2xl">Buat short link yang rapi, singkat, dan cepat</div>
+          <div className="mt-2 text-sm leading-relaxed text-muted">
+            Masukkan URL panjang, pilih custom code (opsional), lalu sistem menghasilkan short URL. Semua interaksi memakai notifikasi dan loading modern.
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted">URL Asli</label>
-              <input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com/sangat/panjang"
-                className="input"
-                inputMode="url"
-              />
-              <div className="text-xs text-muted">Wajib http atau https.</div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted">Custom code (opsional)</label>
-              <input
-                value={custom}
-                onChange={(e) => setCustom(e.target.value)}
-                placeholder="ptfaka"
-                className="input"
-                inputMode="text"
-              />
-              <div className="text-xs text-muted">3-10 karakter, huruf/angka/_/-</div>
-            </div>
+            <Input
+              label="URL Asli"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com/sangat/panjang"
+              inputMode="url"
+              hint="Wajib http atau https."
+              error={url.length > 0 && !isValidUrl(trimmedUrl) ? "Format URL tidak valid" : undefined}
+            />
+            <Input
+              label="Custom code (opsional)"
+              value={custom}
+              onChange={(e) => setCustom(e.target.value)}
+              placeholder="ptfaka"
+              inputMode="text"
+              hint="3-10 karakter, huruf/angka/_/-"
+              error={custom.length > 0 && !isValidCustomCode(trimmedCode) ? "Code harus 3-10 karakter dan valid" : undefined}
+            />
           </div>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <button
+            <Button
               type="button"
               onClick={onShorten}
               disabled={!canSubmit}
-              className={[
-                "btn w-full sm:w-auto",
-                "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surfaceElev"
-              ].join(" ")}
+              leftIcon={<Wand2 className="h-4 w-4" />}
+              className="w-full sm:w-auto"
             >
-              <Wand2 className="h-4 w-4" />
               Shorten
-            </button>
+            </Button>
 
-            <a
-              href="/apidocs"
-              className="btn w-full sm:w-auto"
-              onClick={(e) => {
-                e.preventDefault()
+            <Button
+              type="button"
+              onClick={() => {
                 notifyInfo("API Docs", "Buka halaman API Docs untuk melihat endpoint dan contoh cURL.")
                 window.location.assign("/apidocs")
               }}
+              leftIcon={<Link2 className="h-4 w-4" />}
+              className="w-full sm:w-auto"
             >
-              <Link2 className="h-4 w-4" />
               API Docs
-            </a>
+            </Button>
           </div>
         </div>
 
-        <GlowDivider />
+        <div className="h-px w-full bg-border/70" />
 
         <div className="p-5 md:p-6">
           <div className="text-sm font-semibold">Hasil</div>
-          <div className="mt-2 text-xs text-muted">Short URL akan muncul di sini, lengkap dengan tombol copy dan open.</div>
+          <div className="mt-2 text-xs text-muted">Short URL muncul di sini, lengkap dengan tombol copy dan open.</div>
 
           {result ? (
             <motion.div
@@ -162,20 +159,19 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <button type="button" onClick={onCopy} className="btn px-4 py-2">
-                    <Copy className="h-4 w-4" />
+                  <Button type="button" size="sm" onClick={onCopy} leftIcon={<Copy className="h-4 w-4" />}>
                     Copy
-                  </button>
-                  <a
-                    href={result.short_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn px-4 py-2"
+                  </Button>
+                  <Button
+                    asChild
+                    size="sm"
+                    leftIcon={<ExternalLink className="h-4 w-4" />}
                     onClick={() => notifyInfo("Opening", "Membuka short URL di tab baru.")}
                   >
-                    <ExternalLink className="h-4 w-4" />
-                    Open
-                  </a>
+                    <a href={result.short_url} target="_blank" rel="noreferrer">
+                      Open
+                    </a>
+                  </Button>
                 </div>
               </div>
             </motion.div>
@@ -186,7 +182,7 @@ export default function HomePage() {
           )}
 
           <div className="mt-5 text-xs text-muted">
-            Butuh detail kebijakan penggunaan? Baca{" "}
+            Butuh detail kebijakan penggunaan? Buka{" "}
             <Link to="/terms" className="font-semibold text-foreground underline decoration-border underline-offset-4">
               Syarat & Ketentuan
             </Link>
@@ -204,8 +200,7 @@ export default function HomePage() {
         <div className="card p-5">
           <div className="text-sm font-semibold">Custom code</div>
           <div className="mt-2 text-xs leading-relaxed text-muted">
-            Kamu bisa request custom code seperti <span className="font-semibold text-foreground">ptfaka</span>. Jika kosong,
-            sistem akan memilih kode otomatis yang tetap singkat.
+            Kamu bisa request custom code seperti <span className="font-semibold text-foreground">ptfaka</span>. Jika kosong, sistem memilih kode otomatis.
           </div>
         </div>
         <div className="card p-5">
@@ -217,7 +212,7 @@ export default function HomePage() {
         <div className="card p-5">
           <div className="text-sm font-semibold">Mobile ready</div>
           <div className="mt-2 text-xs leading-relaxed text-muted">
-            Layout responsif, sidebar menu nyaman di mobile, dan kontrol tetap mudah dipakai di desktop.
+            Layout responsif, sidebar nyaman di mobile, dan kontrol mudah dipakai di desktop.
           </div>
         </div>
       </motion.section>
