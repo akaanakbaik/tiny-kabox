@@ -101,7 +101,7 @@ export default function HomePage() {
     if (ok) {
       notifySuccess("Berhasil disalin", "Short URL telah disalin ke clipboard.")
     } else {
-      notifyWarn("Gagal menyalin", "Clipboard tidak dapat diakses oleh browser.")
+      notifyWarn("Gagal menyalin", "Clipboard tidak dapat diakses di browser ini.")
     }
   }
 
@@ -134,16 +134,16 @@ export default function HomePage() {
               </span>
               <span className="chip">
                 <Zap className="h-4 w-4" />
-                fast response ui
+                smooth ui feedback
               </span>
             </div>
 
             <div className="mt-5 max-w-3xl text-2xl font-semibold tracking-tight text-foreground md:text-4xl">
-              Buat short URL yang lebih rapi, lebih cepat, dan lebih enak dipakai
+              Buat short URL yang lebih rapi, cepat, dan jauh lebih nyaman dipakai
             </div>
             <div className="mt-3 max-w-2xl text-sm leading-relaxed text-muted md:text-base">
-              Tampilan modern, feedback interaktif, loading halus, notifikasi penuh dari UI, dan alur penggunaan yang dibuat
-              jelas untuk mobile maupun desktop.
+              Semua proses dibuat lebih interaktif dengan loading modern, toast yang jelas, tombol yang nyaman dipakai,
+              dan desain yang konsisten di mobile maupun desktop.
             </div>
           </div>
 
@@ -154,7 +154,7 @@ export default function HomePage() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://example.com/artikel/panjang"
-                hint="Gunakan URL yang valid dengan http atau https."
+                hint="Gunakan URL valid dengan http atau https."
                 error={url.length > 0 && !isValidUrl(trimmedUrl) ? "Format URL tidak valid." : undefined}
               />
 
@@ -187,7 +187,7 @@ export default function HomePage() {
                 type="button"
                 variant="secondary"
                 onClick={() => {
-                  notifyInfo("Membuka dokumentasi", "Mengarah ke halaman dokumentasi API.")
+                  notifyInfo("Membuka dokumentasi", "Kamu diarahkan ke halaman API Docs.")
                   window.location.assign("/apidocs")
                 }}
                 leftIcon={<Link2 className="h-4 w-4" />}
@@ -250,25 +250,25 @@ export default function HomePage() {
           <FeatureCard
             icon={<Sparkles className="h-5 w-5 text-ring" />}
             title="UI modern dan premium"
-            text="Tampilan dirancang lebih profesional, bersih, smooth, dan tetap nyaman dipakai di perangkat kecil maupun besar."
+            text="Tampilan dibuat lebih profesional, bersih, halus, dan tetap ringan saat digunakan."
           />
           <FeatureCard
             icon={<ShieldCheck className="h-5 w-5 text-ok" />}
-            title="Pemberitahuan lebih jelas"
-            text="Seluruh error, sukses, loading, dan status interaksi muncul dari sistem UI internal, bukan notifikasi browser bawaan."
+            title="Notifikasi lebih jelas"
+            text="Setiap aksi penting akan menampilkan feedback dari sistem UI internal, bukan alert browser bawaan."
           />
           <FeatureCard
             icon={<Zap className="h-5 w-5 text-warn" />}
             title="Alur cepat dan ringan"
-            text="Input singkat, hasil cepat tampil, dan tombol aksi dibuat jelas untuk copy, open, serta navigasi lanjutan."
+            text="Input sederhana, hasil cepat ditampilkan, dan aksi lanjutan dibuat jelas untuk copy maupun open."
           />
 
           <div className="rounded-[28px] border border-border bg-surfaceElev p-5 shadow-soft">
             <div className="text-sm font-semibold text-foreground">Tips penggunaan</div>
             <div className="mt-3 space-y-3 text-xs leading-relaxed text-muted">
-              <p>Gunakan custom code kalau ingin short URL yang mudah diingat.</p>
-              <p>Kalau tidak ingin repot, biarkan sistem memilih code otomatis.</p>
-              <p>Jika link gagal dibuat, sistem akan menampilkan notifikasi error yang lebih ramah dan jelas.</p>
+              <p>Gunakan custom code jika ingin URL pendek yang mudah diingat.</p>
+              <p>Biarkan kosong jika ingin sistem membuat code otomatis secara cepat.</p>
+              <p>Kalau backend error, UI sekarang akan menampilkan notifikasi yang lebih jelas dan aman dipahami.</p>
             </div>
           </div>
         </motion.div>
