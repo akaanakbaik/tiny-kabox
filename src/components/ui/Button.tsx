@@ -1,6 +1,6 @@
 import React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
 import { clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -9,22 +9,33 @@ function cn(...inputs: Array<string | undefined | null | false>) {
 }
 
 const buttonVariants = cva(
-  "inline-flex select-none items-center justify-center gap-2 rounded-2xl border border-border bg-surfaceElev px-4 py-3 text-sm font-semibold text-foreground shadow-soft transition-all hover:bg-surfaceElev2 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex select-none items-center justify-center gap-2 rounded-2xl border font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
-      size: {
-        md: "h-12",
-        sm: "h-10 px-3 py-2 text-sm",
-        xs: "h-9 px-3 py-2 text-xs"
+      variant: {
+        primary:
+          "border-border bg-foreground text-surface hover:opacity-90 active:scale-[0.99] shadow-soft",
+        secondary:
+          "border-border bg-surfaceElev text-foreground hover:bg-surfaceElev2 active:scale-[0.99] shadow-soft",
+        ghost:
+          "border-transparent bg-transparent text-foreground hover:bg-surfaceElev/70 active:scale-[0.99]",
+        danger:
+          "border-border bg-danger/10 text-danger hover:bg-danger/15 active:scale-[0.99]"
       },
-      tone: {
-        neutral: "",
-        danger: "border-border bg-surfaceElev text-foreground hover:bg-surfaceElev2"
+      size: {
+        sm: "h-10 px-4 text-sm",
+        md: "h-12 px-5 text-sm",
+        lg: "h-14 px-6 text-base"
+      },
+      block: {
+        true: "w-full",
+        false: ""
       }
     },
     defaultVariants: {
+      variant: "secondary",
       size: "md",
-      tone: "neutral"
+      block: false
     }
   }
 )
@@ -36,13 +47,24 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> &
     rightIcon?: React.ReactNode
   }
 
-export default function Button({ className, size, tone, asChild, leftIcon, rightIcon, children, ...props }: Props) {
+export default function Button({
+  asChild,
+  className,
+  variant,
+  size,
+  block,
+  leftIcon,
+  rightIcon,
+  children,
+  ...props
+}: Props) {
   const Comp = asChild ? Slot : "button"
+
   return (
-    <Comp className={cn(buttonVariants({ size, tone }), className)} {...props}>
-      {leftIcon ? <span className="inline-flex">{leftIcon}</span> : null}
-      <span className="inline-flex items-center">{children}</span>
-      {rightIcon ? <span className="inline-flex">{rightIcon}</span> : null}
+    <Comp className={cn(buttonVariants({ variant, size, block }), className)} {...props}>
+      {leftIcon ? <span className="inline-flex shrink-0">{leftIcon}</span> : null}
+      <span className="truncate">{children}</span>
+      {rightIcon ? <span className="inline-flex shrink-0">{rightIcon}</span> : null}
     </Comp>
   )
 }
