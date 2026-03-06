@@ -10,28 +10,18 @@ function ToastIcon({ kind }: { kind: "success" | "error" | "info" | "warning" })
   return <Info className="h-5 w-5 text-ring" />
 }
 
-function ToastBar({ kind }: { kind: "success" | "error" | "info" | "warning" }) {
-  const color =
-    kind === "success"
-      ? "bg-ok/80"
-      : kind === "warning"
-        ? "bg-warn/80"
-        : kind === "error"
-          ? "bg-danger/80"
-          : "bg-ring/80"
-
-  return (
-    <div className="h-1 w-full overflow-hidden bg-border/50">
-      <div className={`h-full w-full origin-left animate-progress ${color}`} />
-    </div>
-  )
+function colorBar(kind: "success" | "error" | "info" | "warning") {
+  if (kind === "success") return "bg-ok/90"
+  if (kind === "warning") return "bg-warn/90"
+  if (kind === "error") return "bg-danger/90"
+  return "bg-ring/90"
 }
 
 export default function Toaster() {
   const { toasts, removeToast } = useApp()
 
   return (
-    <div className="pointer-events-none fixed right-3 top-20 z-[80] flex w-[min(94vw,420px)] flex-col gap-3 md:right-6 md:top-24">
+    <div className="pointer-events-none fixed right-3 top-20 z-[90] flex w-[min(94vw,430px)] flex-col gap-3 md:right-6 md:top-24">
       <AnimatePresence initial={false}>
         {toasts.map((toast) => {
           const ActionTag = toast.action?.href ? "a" : "button"
@@ -43,10 +33,10 @@ export default function Toaster() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
               transition={{ duration: 0.18 }}
-              className="pointer-events-auto overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl"
+              className="pointer-events-auto overflow-hidden rounded-[26px] border border-border bg-surface shadow-2xl"
             >
               <div className="flex items-start gap-3 p-4">
-                <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surfaceElev">
+                <div className="mt-0.5 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-surfaceElev">
                   <ToastIcon kind={toast.kind} />
                 </div>
 
@@ -85,7 +75,9 @@ export default function Toaster() {
                 </button>
               </div>
 
-              <ToastBar kind={toast.kind} />
+              <div className="h-1 w-full overflow-hidden bg-border/50">
+                <div className={`h-full w-full origin-left animate-progress ${colorBar(toast.kind)}`} />
+              </div>
             </motion.div>
           )
         })}
