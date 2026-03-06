@@ -1,7 +1,16 @@
 import React from "react"
-import { motion } from "framer-motion"
-import { ArrowUpRight, CheckCircle2, Copy, Link2, ShieldCheck, Sparkles, Wand2 } from "lucide-react"
 import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Copy,
+  Link2,
+  ShieldCheck,
+  Sparkles,
+  Wand2,
+  Zap
+} from "lucide-react"
 import Button from "../components/ui/Button"
 import Input from "../components/ui/Input"
 import Seo from "../components/Seo"
@@ -23,13 +32,17 @@ function createFinalShortUrl(base: string, code: string, shortUrl?: string, shor
   return `${base.replace(/\/+$/, "")}/${code}`
 }
 
-function StatCard(props: { title: string; text: string; icon: React.ReactNode }) {
+function FeatureCard(props: {
+  icon: React.ReactNode
+  title: string
+  text: string
+}) {
   return (
-    <div className="rounded-3xl border border-border bg-surfaceElev p-4 shadow-soft">
-      <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-surface">
+    <div className="rounded-[28px] border border-border bg-surfaceElev p-5 shadow-soft">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-surface">
         {props.icon}
       </div>
-      <div className="mt-3 text-sm font-semibold text-foreground">{props.title}</div>
+      <div className="mt-4 text-sm font-semibold text-foreground">{props.title}</div>
       <div className="mt-2 text-xs leading-relaxed text-muted">{props.text}</div>
     </div>
   )
@@ -55,7 +68,7 @@ export default function HomePage() {
     }
 
     if (trimmedCode && !isValidCustomCode(trimmedCode)) {
-      notifyWarn("Custom code tidak valid", "Gunakan 3-10 karakter, hanya huruf, angka, underscore, atau dash.")
+      notifyWarn("Custom code tidak valid", "Gunakan 3-10 karakter dengan huruf, angka, underscore, atau dash.")
       return
     }
 
@@ -84,60 +97,64 @@ export default function HomePage() {
 
   async function handleCopy() {
     if (!result?.shortUrl) return
-
     const ok = await copyText(result.shortUrl)
     if (ok) {
-      notifySuccess("Berhasil disalin", "Short URL telah masuk ke clipboard.")
+      notifySuccess("Berhasil disalin", "Short URL telah disalin ke clipboard.")
     } else {
-      notifyWarn("Copy gagal", "Browser menolak akses clipboard.")
+      notifyWarn("Gagal menyalin", "Clipboard tidak dapat diakses oleh browser.")
     }
   }
 
   function handleOpen() {
     if (!result?.shortUrl) return
-    notifyInfo("Membuka short URL", "Link dibuka di tab baru.")
+    notifyInfo("Membuka link", "Short URL dibuka di tab baru.")
     window.open(result.shortUrl, "_blank", "noopener,noreferrer")
   }
 
   return (
     <div className="space-y-6">
-      <Seo title="Home" description="Create short links with modern UI and smooth interactions" path="/" />
+      <Seo title="Home" description="Create short links with premium modern UI and smooth interactions" path="/" />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.24 }}
-          className="overflow-hidden rounded-[28px] border border-border bg-surfaceElev shadow-2xl"
+          className="overflow-hidden rounded-[30px] border border-border bg-surfaceElev shadow-2xl"
         >
-          <div className="border-b border-border/70 p-5 md:p-6">
+          <div className="border-b border-border/70 p-5 md:p-7">
             <div className="flex flex-wrap items-center gap-2">
               <span className="chip">
                 <Sparkles className="h-4 w-4" />
-                modern shortener
+                premium shortener
               </span>
               <span className="chip">
                 <ShieldCheck className="h-4 w-4" />
-                feedback rich ui
+                secure interaction
+              </span>
+              <span className="chip">
+                <Zap className="h-4 w-4" />
+                fast response ui
               </span>
             </div>
 
-            <div className="mt-4 max-w-2xl text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-              Short URL cepat, modern, profesional, dan nyaman digunakan di semua perangkat
+            <div className="mt-5 max-w-3xl text-2xl font-semibold tracking-tight text-foreground md:text-4xl">
+              Buat short URL yang lebih rapi, lebih cepat, dan lebih enak dipakai
             </div>
-            <div className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-              Buat link pendek, pakai custom code, dapatkan loading modern, toast interaktif, dan pengalaman UI halus tanpa notifikasi browser bawaan.
+            <div className="mt-3 max-w-2xl text-sm leading-relaxed text-muted md:text-base">
+              Tampilan modern, feedback interaktif, loading halus, notifikasi penuh dari UI, dan alur penggunaan yang dibuat
+              jelas untuk mobile maupun desktop.
             </div>
           </div>
 
-          <div className="p-5 md:p-6">
+          <div className="p-5 md:p-7">
             <div className="grid grid-cols-1 gap-4">
               <Input
                 label="URL tujuan"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://example.com/artikel/panjang"
-                hint="Gunakan URL http atau https yang valid."
+                hint="Gunakan URL yang valid dengan http atau https."
                 error={url.length > 0 && !isValidUrl(trimmedUrl) ? "Format URL tidak valid." : undefined}
               />
 
@@ -146,10 +163,10 @@ export default function HomePage() {
                 value={customCode}
                 onChange={(e) => setCustomCode(e.target.value)}
                 placeholder="ptfaka"
-                hint="Opsional. Gunakan 3–10 karakter."
+                hint="Opsional. Panjang 3 sampai 10 karakter."
                 error={
                   customCode.length > 0 && !isValidCustomCode(trimmedCode)
-                    ? "Custom code harus 3–10 karakter dan hanya huruf, angka, underscore, atau dash."
+                    ? "Custom code harus 3-10 karakter dan hanya berisi huruf, angka, underscore, atau dash."
                     : undefined
                 }
               />
@@ -158,28 +175,28 @@ export default function HomePage() {
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Button
                 type="button"
+                variant="primary"
                 onClick={handleShorten}
                 disabled={!canSubmit}
                 leftIcon={<Wand2 className="h-4 w-4" />}
-                className="w-full sm:w-auto"
               >
                 Buat Short URL
               </Button>
 
               <Button
                 type="button"
+                variant="secondary"
                 onClick={() => {
                   notifyInfo("Membuka dokumentasi", "Mengarah ke halaman dokumentasi API.")
                   window.location.assign("/apidocs")
                 }}
                 leftIcon={<Link2 className="h-4 w-4" />}
-                className="w-full sm:w-auto"
               >
-                Lihat API Docs
+                API Docs
               </Button>
             </div>
 
-            <div className="mt-6 rounded-[26px] border border-border bg-surface p-4 md:p-5">
+            <div className="mt-7 rounded-[28px] border border-border bg-surface p-4 md:p-5">
               <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <CheckCircle2 className="h-4 w-4 text-ok" />
                 Hasil short URL
@@ -192,24 +209,24 @@ export default function HomePage() {
                   transition={{ duration: 0.2 }}
                   className="mt-4 space-y-4"
                 >
-                  <div className="rounded-2xl border border-border bg-surfaceElev p-4">
+                  <div className="rounded-[22px] border border-border bg-surfaceElev p-4">
                     <div className="text-xs font-semibold text-muted">Short URL</div>
-                    <div className="mt-1 break-all text-sm font-semibold text-foreground">{result.shortUrl}</div>
-                    <div className="mt-3 text-xs text-muted">Target: {result.url}</div>
+                    <div className="mt-1 break-all text-sm font-semibold text-foreground md:text-base">{result.shortUrl}</div>
+                    <div className="mt-3 text-xs leading-relaxed text-muted">Target: {result.url}</div>
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button type="button" size="sm" onClick={handleCopy} leftIcon={<Copy className="h-4 w-4" />}>
+                    <Button type="button" variant="secondary" size="sm" onClick={handleCopy} leftIcon={<Copy className="h-4 w-4" />}>
                       Copy Link
                     </Button>
-                    <Button type="button" size="sm" onClick={handleOpen} leftIcon={<ArrowUpRight className="h-4 w-4" />}>
+                    <Button type="button" variant="secondary" size="sm" onClick={handleOpen} leftIcon={<ArrowUpRight className="h-4 w-4" />}>
                       Open Link
                     </Button>
                   </div>
                 </motion.div>
               ) : (
-                <div className="mt-4 rounded-2xl border border-dashed border-border bg-surfaceElev p-4 text-sm text-muted">
-                  Belum ada hasil. Masukkan URL lalu tekan tombol buat short URL.
+                <div className="mt-4 rounded-[22px] border border-dashed border-border bg-surfaceElev p-4 text-sm text-muted">
+                  Belum ada hasil. Isi URL lalu tekan tombol buat short URL untuk menampilkan hasil di sini.
                 </div>
               )}
             </div>
@@ -230,28 +247,28 @@ export default function HomePage() {
           transition={{ duration: 0.24, delay: 0.06 }}
           className="space-y-4"
         >
-          <StatCard
+          <FeatureCard
             icon={<Sparkles className="h-5 w-5 text-ring" />}
-            title="Interaksi modern"
-            text="Loading global, toast interaktif, animasi halus, dan seluruh feedback ditampilkan dari UI web."
+            title="UI modern dan premium"
+            text="Tampilan dirancang lebih profesional, bersih, smooth, dan tetap nyaman dipakai di perangkat kecil maupun besar."
           />
-          <StatCard
+          <FeatureCard
             icon={<ShieldCheck className="h-5 w-5 text-ok" />}
-            title="Aman dan profesional"
-            text="Validasi input jelas, tampilan rapi, dan alur penggunaan dibuat sederhana namun tetap kuat."
+            title="Pemberitahuan lebih jelas"
+            text="Seluruh error, sukses, loading, dan status interaksi muncul dari sistem UI internal, bukan notifikasi browser bawaan."
           />
-          <StatCard
-            icon={<Link2 className="h-5 w-5 text-warn" />}
-            title="Fleksibel"
-            text="Bisa request custom code sendiri atau biarkan sistem membuat short code otomatis secara cepat."
+          <FeatureCard
+            icon={<Zap className="h-5 w-5 text-warn" />}
+            title="Alur cepat dan ringan"
+            text="Input singkat, hasil cepat tampil, dan tombol aksi dibuat jelas untuk copy, open, serta navigasi lanjutan."
           />
 
           <div className="rounded-[28px] border border-border bg-surfaceElev p-5 shadow-soft">
             <div className="text-sm font-semibold text-foreground">Tips penggunaan</div>
             <div className="mt-3 space-y-3 text-xs leading-relaxed text-muted">
-              <p>Gunakan custom code unik jika ingin URL lebih mudah diingat.</p>
-              <p>Pastikan URL tujuan benar agar pengunjung tidak diarahkan ke link yang salah.</p>
-              <p>Jika muncul error, sistem akan memberi pemberitahuan yang lebih jelas langsung dari UI.</p>
+              <p>Gunakan custom code kalau ingin short URL yang mudah diingat.</p>
+              <p>Kalau tidak ingin repot, biarkan sistem memilih code otomatis.</p>
+              <p>Jika link gagal dibuat, sistem akan menampilkan notifikasi error yang lebih ramah dan jelas.</p>
             </div>
           </div>
         </motion.div>
