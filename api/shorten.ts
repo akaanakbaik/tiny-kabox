@@ -110,92 +110,94 @@ function isPgDuplicateError(e: any): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    return toJson(res, 405, { ok: false, message: "Method not allowed" })
-  }
-
-  const baseUrl = normBase(process.env.BASE_URL || "")
-  if (!baseUrl) {
-    return toJson(res, 500, { ok: false, message: "Missing BASE_URL" })
-  }
-
-  const body = parseBody(req.body)
-  const url = String(body.url || "").trim()
-  const requestedCode = String(body.code || "").trim()
-
-  if (!isValidUrl(url)) {
-    return toJson(res, 400, { ok: false, message: "Invalid URL" })
-  }
-
-  if (requestedCode && !isValidCustomCode(requestedCode)) {
-    return toJson(res, 400, { ok: false, message: "Invalid code" })
-  }
-
-  const pool = makePool()
-
   try {
-    await ensureSchema(pool)
-
-    if (requestedCode) {
-      try {
-        await pool.query(
-          "INSERT INTO short_urls(code, url, created_at, clicks) VALUES ($1, $2, NOW(), 0)",
-          [requestedCode, url]
-        )
-
-        const short = `${baseUrl}/${requestedCode}`
-
-        return toJson(res, 200, {
-          ok: true,
-          code: requestedCode,
-          url,
-          shortUrl: short,
-          short_url: short
-        })
-      } catch (e: any) {
-        if (isPgDuplicateError(e)) {
-          return toJson(res, 409, { ok: false, message: "Code already in use" })
-        }
-        return toJson(res, 500, { ok: false, message: e?.message || "Server error" })
-      }
+    if (req.method !== "POST") {
+      return toJson(res, 405, { ok: false, message: "Method not allowed" })
     }
 
-    let finalCode = ""
-    let inserted = false
+    const baseUrl = normBase(process.env.BASE_URL || "")
+    if (!baseUrl) {
+      return toJson(res, 500, { ok: false, message: "Missing BASE_URL" })
+    }
 
-    for (let i = 0; i < 12; i += 1) {
-      const candidate = randomCode() || `kbx${crypto.randomInt(100, 999)}`
-      try {
-        await pool.query(
-          "INSERT INTO short_urls(code, url, created_at, clicks) VALUES ($1, $2, NOW(), 0)",
-          [candidate, url]
-        )
-        finalCode = candidate
-        inserted = true
-        break
-      } catch (e: any) {
-        if (!isPgDuplicateError(e)) {
+    const body = parseBody(req.body)
+    const url = String(body.url || "").trim()
+    const requestedCode = String(body.code || "").trim()
+
+    if (!isValidUrl(url)) {
+      return toJson(res, 400, { ok: false, message: "Invalid URL" })
+    }
+
+    if (requestedCode && !isValidCustomCode(requestedCode)) {
+      return toJson(res, 400, { ok: false, message: "Invalid code" })
+    }
+
+    const pool = makePool()
+
+    try {
+      await ensureSchema(pool)
+
+      if (requestedCode) {
+        try {
+          await pool.query(
+            "INSERT INTO short_urls(code, url, created_at, clicks) VALUES ($1, $2, NOW(), 0)",
+            [requestedCode, url]
+          )
+
+          const short = `${baseUrl}/${requestedCode}`
+
+          return toJson(res, 200, {
+            ok: true,
+            code: requestedCode,
+            url,
+            shortUrl: short,
+            short_url: short
+          })
+        } catch (e: any) {
+          if (isPgDuplicateError(e)) {
+            return toJson(res, 409, { ok: false, message: "Code already in use" })
+          }
           return toJson(res, 500, { ok: false, message: e?.message || "Server error" })
         }
       }
+
+      let finalCode = ""
+      let inserted = false
+
+      for (let i = 0; i < 12; i += 1) {
+        const candidate = randomCode() || `kbx${crypto.randomInt(100, 999)}`
+        try {
+          await pool.query(
+            "INSERT INTO short_urls(code, url, created_at, clicks) VALUES ($1, $2, NOW(), 0)",
+            [candidate, url]
+          )
+          finalCode = candidate
+          inserted = true
+          break
+        } catch (e: any) {
+          if (!isPgDuplicateError(e)) {
+            return toJson(res, 500, { ok: false, message: e?.message || "Server error" })
+          }
+        }
+      }
+
+      if (!inserted || !finalCode) {
+        return toJson(res, 500, { ok: false, message: "Failed to generate unique code" })
+      }
+
+      const short = `${baseUrl}/${finalCode}`
+
+      return toJson(res, 200, {
+        ok: true,
+        code: finalCode,
+        url,
+        shortUrl: short,
+        short_url: short
+      })
+    } finally {
+      await pool.end().catch(() => {})
     }
-
-    if (!inserted || !finalCode) {
-      return toJson(res, 500, { ok: false, message: "Failed to generate unique code" })
-    }
-
-    const short = `${baseUrl}/${finalCode}`
-
-    return toJson(res, 200, {
-      ok: true,
-      code: finalCode,
-      url,
-      shortUrl: short,
-      short_url: short
-    })
   } catch (e: any) {
     return toJson(res, 500, { ok: false, message: e?.message || "Server error" })
-  } finally {
-    await pool.end().catch(() => {})
   }
 }
