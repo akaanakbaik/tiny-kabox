@@ -1,17 +1,18 @@
 import React from "react"
 import { motion } from "framer-motion"
-import { FileText, Shield, AlertTriangle, Gavel } from "lucide-react"
+import { FileText, Gavel, Shield, TriangleAlert } from "lucide-react"
+import Seo from "../components/Seo"
 
-function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function InfoBlock(props: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <div className="card p-5">
+    <div className="rounded-[28px] border border-border bg-surfaceElev p-5 shadow-soft">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surfaceElev">
-          {icon}
+        <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-surface">
+          {props.icon}
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-semibold">{title}</div>
-          <div className="mt-2 text-xs leading-relaxed text-muted">{children}</div>
+          <div className="text-sm font-semibold text-foreground">{props.title}</div>
+          <div className="mt-3 text-xs leading-relaxed text-muted">{props.children}</div>
         </div>
       </div>
     </div>
@@ -21,82 +22,86 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
 export default function TermsPage() {
   return (
     <div className="space-y-6">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="card p-5 md:p-6">
-        <div className="inline-flex items-center gap-2">
-          <span className="chip">
-            <FileText className="h-4 w-4" />
-            Syarat & Ketentuan
-          </span>
-          <span className="chip">
-            <Shield className="h-4 w-4" />
-            Privacy & Safety
-          </span>
+      <Seo title="Syarat dan Ketentuan" description="Aturan penggunaan layanan short url by kabox" path="/terms" />
+
+      <motion.section
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.24 }}
+        className="rounded-[30px] border border-border bg-surfaceElev p-5 shadow-2xl md:p-6"
+      >
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-xs text-muted">
+          <FileText className="h-4 w-4 text-ring" />
+          usage policy and platform rules
         </div>
 
-        <div className="mt-3 text-xl font-semibold tracking-tight md:text-2xl">Syarat & Ketentuan Penggunaan</div>
-        <div className="mt-2 text-sm leading-relaxed text-muted">
-          Dokumen ini menjelaskan aturan penggunaan layanan <span className="font-semibold text-foreground">short url by kabox</span>. Dengan menggunakan layanan ini,
-          kamu dianggap memahami dan menyetujui seluruh poin di bawah. Jika tidak setuju, mohon hentikan penggunaan layanan.
+        <div className="mt-4 text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Syarat & Ketentuan</div>
+        <div className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
+          Halaman ini menjelaskan aturan, kebijakan, hak, batasan, dan tanggung jawab dalam penggunaan layanan short url by kabox.
+          Dengan menggunakan layanan ini, kamu dianggap memahami dan menyetujui isi kebijakan berikut.
         </div>
-      </motion.div>
+      </motion.section>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Section icon={<Gavel className="h-5 w-5" />} title="Ruang Lingkup Layanan">
-          Layanan ini menyediakan fitur untuk membuat tautan pendek yang mengarah ke URL asli. Sistem dapat menyimpan data kode short link, URL tujuan,
-          waktu pembuatan, dan jumlah klik. Layanan dapat berubah, ditambah, atau dikurangi sewaktu-waktu untuk peningkatan kualitas dan keamanan.
-        </Section>
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, delay: 0.04 }}>
+          <InfoBlock icon={<Gavel className="h-5 w-5 text-ring" />} title="Ruang Lingkup Layanan">
+            Layanan ini menyediakan sistem pemendek URL berbasis web dan API. Pengguna dapat membuat short link baru, memakai custom code,
+            serta mengarahkan pengunjung ke URL tujuan tertentu. Layanan ini disediakan untuk kebutuhan berbagi link yang lebih singkat, bersih,
+            dan mudah diingat.
+          </InfoBlock>
+        </motion.div>
 
-        <Section icon={<AlertTriangle className="h-5 w-5 text-warn" />} title="Larangan Penggunaan">
-          Dilarang menggunakan layanan untuk tujuan melanggar hukum atau merugikan pihak lain. Termasuk namun tidak terbatas pada: phishing, malware,
-          penipuan, penyebaran konten ilegal, doxing, spam, atau tindakan yang bertujuan mengecoh pengguna lain. Jika terdeteksi penyalahgunaan,
-          kami berhak menonaktifkan kode short link terkait tanpa pemberitahuan.
-        </Section>
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, delay: 0.08 }}>
+          <InfoBlock icon={<TriangleAlert className="h-5 w-5 text-warn" />} title="Larangan Penggunaan">
+            Pengguna dilarang memanfaatkan layanan ini untuk penipuan, phishing, malware, spam, distribusi konten ilegal, penyesatan identitas,
+            atau aktivitas yang merugikan pihak lain. Sistem dapat menolak, membatasi, atau menghapus short link tertentu jika ditemukan indikasi penyalahgunaan.
+          </InfoBlock>
+        </motion.div>
 
-        <Section icon={<Shield className="h-5 w-5" />} title="Privasi & Data">
-          Kami berupaya meminimalkan data yang dikumpulkan. Data yang disimpan terutama untuk fungsi utama: pemetaan kode ke URL dan statistik klik.
-          Kami tidak menjanjikan anonimitas penuh. Jika diperlukan untuk keamanan, kami dapat melakukan audit teknis pada pola penggunaan (misalnya lonjakan traffic
-          abnormal) untuk mengurangi spam dan penyalahgunaan.
-        </Section>
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, delay: 0.12 }}>
+          <InfoBlock icon={<Shield className="h-5 w-5 text-ok" />} title="Privasi & Keamanan">
+            Kami berusaha menjaga koneksi, penyimpanan data, dan interaksi sistem tetap aman. Namun, pengguna tetap bertanggung jawab memastikan
+            URL tujuan yang dipakai aman, sah, dan tidak melanggar hukum. Kami dapat melakukan pembatasan teknis atau audit dasar untuk menjaga kestabilan layanan.
+          </InfoBlock>
+        </motion.div>
 
-        <Section icon={<FileText className="h-5 w-5" />} title="Ketersediaan & Batasan">
-          Layanan disediakan sebagaimana adanya. Walaupun kami berusaha menjaga uptime dan performa, kami tidak menjamin layanan selalu tersedia tanpa gangguan.
-          Gangguan dapat terjadi akibat pemeliharaan, perubahan infrastruktur, atau faktor eksternal. Kamu disarankan tidak mengandalkan layanan ini sebagai satu-satunya
-          sumber kritikal tanpa mekanisme cadangan.
-        </Section>
-      </div>
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, delay: 0.16 }}>
+          <InfoBlock icon={<FileText className="h-5 w-5 text-ring" />} title="Perubahan Kebijakan">
+            Ketentuan ini dapat berubah sewaktu-waktu untuk penyesuaian fitur, keamanan, atau kebutuhan operasional layanan. Versi terbaru akan ditampilkan pada halaman ini.
+            Penggunaan layanan setelah pembaruan dianggap sebagai persetujuan terhadap ketentuan terbaru.
+          </InfoBlock>
+        </motion.div>
+      </section>
 
-      <div className="card p-5">
-        <div className="text-sm font-semibold">Ketentuan Tambahan yang Lebih Rinci</div>
-        <div className="mt-3 space-y-3 text-xs leading-relaxed text-muted">
+      <motion.section
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.24, delay: 0.2 }}
+        className="rounded-[30px] border border-border bg-surfaceElev p-5 shadow-soft"
+      >
+        <div className="text-sm font-semibold text-foreground">Ketentuan Tambahan</div>
+
+        <div className="mt-4 space-y-4 text-xs leading-relaxed text-muted">
           <p>
-            1. Kamu bertanggung jawab penuh atas URL yang kamu pendekkan. Pastikan kamu memiliki hak atau izin untuk membagikan URL tersebut, dan pastikan konten tujuan
-            tidak melanggar hukum maupun hak pihak lain.
+            1. Pengguna bertanggung jawab penuh atas setiap URL yang dimasukkan ke dalam sistem, termasuk isi, tujuan, dan dampak dari distribusi link tersebut.
           </p>
           <p>
-            2. Custom code bersifat “first come, first served”. Jika code sudah digunakan, kamu harus memilih code lain. Kami dapat menghapus atau mengganti code yang
-            dinilai melanggar kebijakan atau berpotensi membingungkan pengguna (misalnya meniru brand/layanan lain dengan tujuan menipu).
+            2. Custom short code yang telah digunakan pengguna lain tidak dapat dipakai ulang, kecuali link terkait telah dihapus atau dinonaktifkan oleh sistem.
           </p>
           <p>
-            3. Statistik klik (clicks) disediakan untuk kebutuhan dasar. Kami tidak menjamin statistik tersebut akurat 100% dalam semua kondisi karena beberapa klik dapat
-            diblokir oleh sistem keamanan browser, adblocker, atau mekanisme cache tertentu.
+            3. Statistik, klik, dan data teknis yang tersedia dalam sistem digunakan untuk operasional layanan dan dapat berubah sewaktu-waktu tanpa pemberitahuan khusus.
           </p>
           <p>
-            4. Kami dapat menerapkan pembatasan rate limit, validasi tambahan, atau mekanisme anti-spam kapan saja. Tujuannya adalah menjaga layanan tetap sehat dan
-            melindungi pengguna dari penyalahgunaan.
+            4. Kami tidak menjamin layanan akan selalu tersedia tanpa gangguan. Maintenance, perubahan infrastruktur, atau gangguan eksternal dapat mempengaruhi akses.
           </p>
           <p>
-            5. Jika terjadi penyalahgunaan berat atau pelanggaran hukum, kami dapat bekerja sama dengan pihak berwenang sesuai peraturan yang berlaku, termasuk memberikan
-            informasi teknis yang relevan apabila diwajibkan secara hukum.
+            5. Untuk penggunaan komersial, integrasi berat, atau kebutuhan trafik tinggi, pengguna disarankan memastikan arsitektur penggunaan sesuai dengan batas sistem.
           </p>
           <p>
-            6. Kebijakan ini dapat diperbarui sewaktu-waktu. Versi terbaru akan ditampilkan pada halaman ini. Dengan tetap menggunakan layanan setelah pembaruan, kamu
-            dianggap menyetujui perubahan yang berlaku.
-          </p>
-          <p>
-            7. Untuk pertanyaan, masukan, atau laporan penyalahgunaan, kamu dapat menghubungi pihak pengelola melalui kanal yang tersedia di website.
+            6. Pelanggaran terhadap kebijakan ini dapat menyebabkan pembatasan akses, penghapusan link, atau tindakan teknis lain yang dianggap perlu untuk menjaga stabilitas layanan.
           </p>
         </div>
-      </div>
+      </motion.section>
     </div>
   )
 }
