@@ -1,6 +1,14 @@
 import React from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, BookOpen, CheckCircle2, Copy, Link2, TerminalSquare } from "lucide-react"
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  Copy,
+  Link2,
+  Server,
+  TerminalSquare
+} from "lucide-react"
 import Seo from "../components/Seo"
 import Button from "../components/ui/Button"
 import { copyText } from "../lib/clipboard"
@@ -24,7 +32,7 @@ function CodeBlock({ label, code }: { label: string; code: string }) {
           {label}
         </div>
 
-        <Button type="button" size="xs" onClick={handleCopy} leftIcon={<Copy className="h-4 w-4" />}>
+        <Button type="button" size="sm" variant="secondary" onClick={handleCopy} leftIcon={<Copy className="h-4 w-4" />}>
           Copy
         </Button>
       </div>
@@ -90,8 +98,7 @@ export default function ApiDocsPage() {
 }`
 
   const healthCurl = `curl -X GET ${base}/api/health`
-
-  const urlDetailCurl = `curl -X GET ${base}/api/url/ptfaka`
+  const detailCurl = `curl -X GET ${base}/api/url/ptfaka`
 
   return (
     <div className="space-y-6">
@@ -103,22 +110,23 @@ export default function ApiDocsPage() {
         transition={{ duration: 0.24 }}
         className="rounded-[30px] border border-border bg-surfaceElev p-5 shadow-2xl md:p-6"
       >
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-xs text-muted">
-              <Link2 className="h-4 w-4 text-ring" />
-              developer api reference
+              <Server className="h-4 w-4 text-ring" />
+              endpoint reference
             </div>
 
-            <div className="mt-4 text-2xl font-semibold tracking-tight text-foreground md:text-3xl">API Documentation</div>
+            <div className="mt-4 text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Dokumentasi API</div>
             <div className="mt-3 text-sm leading-relaxed text-muted">
-              Seluruh endpoint inti untuk membuat short URL, memeriksa status backend, mengambil detail code, dan melakukan redirect.
-              Dokumentasi ini didesain supaya enak dibaca, mudah dicoba, dan konsisten dengan UI utama.
+              Dokumentasi ini merangkum endpoint inti untuk membuat short URL, mengecek health backend, mengambil detail code,
+              dan memakai short code secara langsung untuk redirect.
             </div>
           </div>
 
           <Button
             type="button"
+            variant="secondary"
             leftIcon={<ArrowLeft className="h-4 w-4" />}
             onClick={() => window.location.assign("/")}
           >
@@ -132,7 +140,7 @@ export default function ApiDocsPage() {
           <ApiCard
             title="POST /api/shorten"
             path={`${base}/api/shorten`}
-            description="Membuat short URL baru menggunakan URL target dan optional custom code. Jika custom code tidak diisi, sistem akan membuat code otomatis."
+            description="Membuat short URL baru menggunakan URL target dan custom code opsional."
             codeLabel="Contoh cURL"
             code={shortenCurl}
             response={shortenResponse}
@@ -143,7 +151,7 @@ export default function ApiDocsPage() {
           <ApiCard
             title="POST /api/shorten (random)"
             path={`${base}/api/shorten`}
-            description="Versi random generator. Cocok jika kamu hanya ingin membuat short URL secepat mungkin tanpa menentukan custom code."
+            description="Jika custom code tidak diisi, sistem akan membangkitkan kode otomatis."
             codeLabel="Contoh cURL"
             code={shortenRandomCurl}
           />
@@ -153,7 +161,7 @@ export default function ApiDocsPage() {
           <ApiCard
             title="GET /api/health"
             path={`${base}/api/health`}
-            description="Mengecek apakah backend dan koneksi database berjalan dengan baik."
+            description="Mengecek status backend dan koneksi database."
             codeLabel="Contoh cURL"
             code={healthCurl}
           />
@@ -163,9 +171,9 @@ export default function ApiDocsPage() {
           <ApiCard
             title="GET /api/url/:code"
             path={`${base}/api/url/ptfaka`}
-            description="Mengambil detail link yang tersimpan berdasarkan short code tertentu."
+            description="Mengambil data URL yang tersimpan berdasarkan short code tertentu."
             codeLabel="Contoh cURL"
-            code={urlDetailCurl}
+            code={detailCurl}
           />
         </motion.div>
       </section>
@@ -180,16 +188,16 @@ export default function ApiDocsPage() {
           <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-surface">
             <CheckCircle2 className="h-5 w-5 text-ok" />
           </div>
-          <div className="mt-3 text-sm font-semibold text-foreground">Format response konsisten</div>
-          <div className="mt-2 text-xs leading-relaxed text-muted">Backend mengembalikan format JSON yang rapi, mudah dipakai, dan ramah integrasi.</div>
+          <div className="mt-3 text-sm font-semibold text-foreground">Output konsisten</div>
+          <div className="mt-2 text-xs leading-relaxed text-muted">Response JSON dibuat lebih seragam agar mudah dipakai di frontend maupun client eksternal.</div>
         </div>
 
         <div className="rounded-[26px] border border-border bg-surfaceElev p-5 shadow-soft">
           <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-surface">
             <TerminalSquare className="h-5 w-5 text-ring" />
           </div>
-          <div className="mt-3 text-sm font-semibold text-foreground">Siap untuk developer</div>
-          <div className="mt-2 text-xs leading-relaxed text-muted">Contoh request dibuat jelas, bisa langsung dipakai untuk testing dengan curl atau client lain.</div>
+          <div className="mt-3 text-sm font-semibold text-foreground">Contoh siap pakai</div>
+          <div className="mt-2 text-xs leading-relaxed text-muted">Setiap card menyediakan cURL yang bisa langsung dicoba untuk testing manual.</div>
         </div>
 
         <div className="rounded-[26px] border border-border bg-surfaceElev p-5 shadow-soft">
@@ -197,7 +205,7 @@ export default function ApiDocsPage() {
             <Link2 className="h-5 w-5 text-warn" />
           </div>
           <div className="mt-3 text-sm font-semibold text-foreground">Redirect sederhana</div>
-          <div className="mt-2 text-xs leading-relaxed text-muted">Akses langsung ke `/:code` untuk redirect ke URL tujuan dengan alur yang cepat dan ringkas.</div>
+          <div className="mt-2 text-xs leading-relaxed text-muted">Gunakan langsung path `/:code` untuk mengarahkan user ke URL target secara cepat.</div>
         </div>
       </motion.section>
     </div>
