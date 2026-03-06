@@ -93,20 +93,18 @@ function generateRandomCode(): string {
   const parts = crypto.randomInt(minParts, maxParts + 1)
 
   let out = ""
-  for (let i = 0; i < parts; i += 1) {
-    out += pickWord()
-  }
+  for (let i = 0; i < parts; i += 1) out += pickWord()
 
   const cleaned = out.replace(/[^a-zA-Z0-9_-]/g, "")
   return cleaned.slice(0, 10) || `kbx${crypto.randomInt(100, 999)}`
 }
 
-function isDuplicateError(err: any): boolean {
-  return err?.code === "23505"
+function isDuplicateError(error: any): boolean {
+  return error?.code === "23505"
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  let pool: ReturnType<typeof makePool> | null = null
+  let pool = null
 
   try {
     if (req.method !== "POST") {
@@ -149,17 +147,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           shortUrl: short,
           short_url: short
         })
-      } catch (err: any) {
-        if (isDuplicateError(err)) {
+      } catch (error: any) {
+        if (isDuplicateError(error)) {
           return toJson(res, 409, { ok: false, message: "Code already in use" })
         }
-        return toJson(res, 500, { ok: false, message: err?.message || "Server error" })
+
+        return toJson(res, 500, {
+          ok: false,
+          message: error?.message || "Failed to create short URL"
+        })
       }
     }
 
     let finalCode = ""
     for (let i = 0; i < 12; i += 1) {
       const candidate = generateRandomCode()
+
       try {
         await pool.query(
           "INSERT INTO short_urls(code, url, created_at, clicks) VALUES ($1, $2, NOW(), 0)",
@@ -167,15 +170,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         )
         finalCode = candidate
         break
-      } catch (err: any) {
-        if (!isDuplicateError(err)) {
-          return toJson(res, 500, { ok: false, message: err?.message || "Server error" })
+      } catch (error: any) {
+        if (!isDuplicateError(error)) {
+          return toJson(res, 500, {
+            ok: false,
+            message: error?.message || "Failed to create short URL"
+          })
         }
       }
     }
 
     if (!finalCode) {
-      return toJson(res, 500, { ok: false, message: "Failed to generate unique code" })
+      return toJson(res, 500, {
+        ok: false,
+        message: "Failed to generate unique code"
+      })
     }
 
     const short = `${baseUrl}/${finalCode}`
@@ -187,8 +196,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       shortUrl: short,
       short_url: short
     })
-  } catch (err: any) {
-    return toJson(res, 500, { ok: false, message: err?.message || "Server error" })
+  } catch (error: any) {
+    return toJson(res, 500, {
+      ok: false,
+      message: error?.message || "Server error"
+    })
   } finally {
     if (pool) {
       await pool.end().catch(() => {})
